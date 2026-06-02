@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VM Kontrol Merkezi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: white; padding-top: 50px; }
+        .btn-dev { padding: 30px; font-size: 24px; font-weight: bold; border-radius: 15px; margin-bottom: 20px;}
+    </style>
+</head>
+<body class="text-center">
+    <div class="container">
+        <h1 class="mb-4">⚡ Sistem Kontrolü</h1>
+        <h3 class="mb-5">Mevcut Durum: <span id="statusText" class="text-warning">Bağlanıyor...</span></h3>
+        
+        <button onclick="changeStatus('RUNNING')" class="btn btn-success w-100 btn-dev shadow">▶️ TÜMÜNÜ BAŞLAT</button>
+        <button onclick="changeStatus('PAUSED')" class="btn btn-danger w-100 btn-dev shadow">🛑 TÜMÜNÜ DURDUR</button>
+    </div>
+
+    <script>
+        // Saniyede bir sunucudan mevcut durumu çeker
+        function fetchStatus() {
+            fetch('/api/get_status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusEl = document.getElementById('statusText');
+                    statusEl.innerText = data.status === 'RUNNING' ? 'ÇALIŞIYOR' : 'DURDURULDU';
+                    statusEl.className = data.status === 'RUNNING' ? 'text-success' : 'text-danger';
+                });
+        }
+
+        // Sen butona basınca komutu sunucuya iletir
+        function changeStatus(newStatus) {
+            fetch('/api/set_status', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({status: newStatus})
+            }).then(() => fetchStatus());
+        }
+
+        fetchStatus();
+        setInterval(fetchStatus, 1500); // Ekranı 1.5 saniyede bir günceller
+    </script>
+</body>
+</html>
